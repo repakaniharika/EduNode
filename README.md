@@ -94,8 +94,39 @@ The system doesn't become useless when connectivity disappears.]
 ## Technical Implementation
 
 ### Architecture
+### Architecture Overview
 
-[Add the system architecture or workflow Mermaid diagram here.]
+EduNode follows an adaptive learning loop:
+
+**Student → Understand → Retrieve → Teach → Evaluate → Adapt**
+
+1. **Student Interface**  
+   Students interact with EduNode through the React-based web interface using text or voice.
+
+2. **Voice & Language Layer**  
+   Voice input is converted into text using the speech recognition pipeline. The language layer supports English and Indian regional languages.
+
+3. **FastAPI Backend**  
+   The backend coordinates the tutoring, curriculum retrieval, misconception detection, adaptive learning, and voice services.
+
+4. **Curriculum RAG**  
+   The RAG pipeline retrieves relevant curriculum content and provides grounded context to the AI tutor.
+
+5. **Gemma AI Tutor**  
+   Gemma generates explanations and tutoring responses using the student's question and retrieved curriculum context.
+
+6. **Misconception Detection**  
+   The student's response is analyzed to identify potential misconceptions and determine whether their reasoning is correct.
+
+7. **Knowledge State & Adaptive Engine**  
+   The system updates the student's mastery state and selects an appropriate teaching strategy based on the student's performance.
+
+8. **Personalized Response**  
+   The AI generates the next explanation based on the student's knowledge level and detected misconceptions.
+
+9. **Dashboards**  
+   Student progress, mastery, and learning-state information are surfaced through the dashboard. Teachers can provide or manage learning material used by the curriculum pipeline.
+
 
 ### Technology Stack
 
@@ -104,39 +135,119 @@ The system doesn't become useless when connectivity disappears.]
 | --------------- | --------------------------- |
 | Frontend        | React 18, Vite, Tailwind CSS, Lucide Icons |
 | Backend         |  Python, FastAPI , Pydantic |
-| Database        | [Technologies / N/A]        |
+| Database        | [N/A]        |
 | AI / ML         | Gemma 2B, RAG               |
-| Infrastructure  | [Technologies / N/A]        |
-| APIs / Services | [Services / N/A]            |
+| Infrastructure  | local development        |
+| APIs / Services | FastAPI REST API           |
 
 
 If a category or technology is not implemented in the project, specify `N/A` instead of leaving the field blank.
 
 ### How It Works
 
-[Explain the major components of the system and how they interact.]
+### How It Works
+
+EduNode follows an adaptive learning loop:
+
+**Student → Understand → Retrieve → Teach → Evaluate → Adapt**
+
+1. **Student Interaction**  
+   The student interacts with EduNode through the React-based web interface using text or voice.
+
+2. **Voice & Language Processing**  
+   Voice input is converted into text through the speech-to-text pipeline. The language module identifies and routes supported languages to the appropriate speech-processing backend.
+
+3. **FastAPI Backend**  
+   The FastAPI backend coordinates the tutoring pipeline and connects the frontend with the AI, RAG, misconception detection, adaptive learning, and voice components.
+
+4. **Curriculum Retrieval**  
+   The RAG pipeline retrieves relevant curriculum content and provides grounded context for the tutor.
+
+5. **AI Tutoring with Gemma**  
+   Gemma generates a response using the student's question, curriculum context, and learning state.
+
+6. **Misconception Detection**  
+   The system analyzes the student's response to identify potential misconceptions and understand where the student is struggling.
+
+7. **Adaptive Learning**  
+   The student's knowledge state and mastery are updated. The adaptive engine selects an appropriate teaching strategy based on the student's performance.
+
+8. **Personalized Response**  
+   Gemma generates the next explanation according to the student's current understanding and detected misconceptions.
+
+9. **Voice Output**  
+   When voice interaction is enabled, the generated response can be converted back into speech using the text-to-speech pipeline.
+
+10. **Progress Visualization**  
+    Learning-state information can be surfaced through the student dashboard to help visualize mastery and progress.
 
 ### Technical Decisions
 
-[Explain important architectural, algorithmic, or engineering decisions made during development.]
+### Technical Decisions
+
+- **FastAPI** was selected as the backend framework to provide lightweight REST APIs and allow the different AI modules to be integrated into a single backend service.
+- **Gemma 2B** was selected as the core tutoring model because its relatively lightweight size makes it suitable for local and resource-constrained AI applications.
+- **RAG** is used to ground tutor responses in curriculum material rather than relying only on the model's general knowledge.
+- **Misconception Detection** is separated from response generation so that identifying a student's misunderstanding and generating the teaching response can be handled as distinct stages.
+- **Adaptive Learning** uses the student's mastery state and detected misconceptions to determine how the next explanation should be delivered.
+- **Modular Voice Architecture** separates speech-to-text, language detection, audio preprocessing, and text-to-speech so individual components can be replaced or improved independently.
+- **React + Vite + Tailwind CSS** were used for the frontend to enable rapid development of an interactive dashboard during the hackathon.
 
 ## Implementation During the Hackathon
 
-[Describe what the team built during the Hack Day and the major functionality or components completed during the event.]
+## Implementation During the Hackathon
+
+During the hackathon, the team developed the core components of EduNode as separate modules and integrated them toward a unified adaptive tutoring platform.
+
+The implemented components include:
+
+- React-based student dashboard and tutoring interface.
+- Curriculum-aware RAG and retrieval components.
+- Gemma-based AI tutoring and response generation.
+- Misconception detection and adaptive learning logic.
+- Student knowledge-state and mastery tracking.
+- Multilingual voice processing with speech-to-text and text-to-speech components.
+- FastAPI backend structure for connecting the AI modules with the frontend.
 
 ### Team Contributions
 
-- **Pavitra:** Designed & developed the Student Dashboard UI using React, Vite, and Tailwind CSS; implemented Curriculum Board/Language switchers, Subject Mastery cards, Misconception Radar, and interactive AI Tutor modal.
-- **Niharika:** Voice & Language integration.
-- **Daphna:** Curriculum Grounding & RAG pipeline.
-- **Harini:** Gemma AI Model & Misconception Detection logic.
+- **Pavitra:** Designed and developed the Student Dashboard UI using React, Vite, and Tailwind CSS; implemented Curriculum Board/Language switchers, Subject Mastery cards, Misconception Radar, and interactive AI Tutor modal.
+- **Niharika:** Team Lead; developed the Voice & Language integration, coordinated system integration, and managed the project repository.
+- **Daphna:** Developed the Curriculum Grounding and RAG pipeline for retrieving relevant learning content.
+- **Harini:** Developed the Gemma AI integration, adaptive tutoring logic, and misconception detection components.
 
 ## Working Application
 
-**Live Application:** http://localhost:5173
+The application can currently be run locally for demonstration and testing.
+
+**Local Frontend:** `http://localhost:5173`
+
+**Local Backend API:** `http://localhost:8000`
+
+Deployment URL: 
+
+**Live Application: 
 
 ## Open Source and AI Usage
 
+### AI / Models
+
+- **Gemma 2B:** Used as the core AI tutoring model for generating adaptive explanations and supporting misconception analysis.
+- **Whisper:** Used for English speech-to-text processing.
+- **IndicConformer:** Used for speech recognition for supported Indian regional languages.
+- **Piper:** Used for local English text-to-speech.
+- **IndicF5:** Used for Indian-language text-to-speech processing.
+- **RAG Pipeline:** Used to retrieve relevant curriculum material and provide grounded context to the AI tutor.
+
+### Open Source Components
+
+- **React 18:** Frontend UI library.
+- **Vite:** Frontend build tool and development server.
+- **Tailwind CSS:** Utility-first CSS framework.
+- **Lucide React:** UI icon library.
+- **FastAPI:** Python backend API framework.
+- **Pydantic:** Data validation and API schemas.
+- **Uvicorn:** ASGI server for running the FastAPI backend.
 ### AI / Models
 
 - **Gemma 2B:** Light-weight instruction tuned model used for adaptive student explanations and misconception detection.

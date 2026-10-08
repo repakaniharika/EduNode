@@ -39,13 +39,57 @@ It also supports regional languages, voice interaction, teacher-uploaded study m
 ### Key Features
 
 - [Adaptive AI Tutor — Understands each student’s responses and dynamically adjusts explanations and difficulty.]
-- []
-- [Feature 3]
-- [Feature 4]
+- [Curriculum-Grounded RAG — Answers are based on the student’s specific curriculum, textbooks, and teacher-uploaded materials.]
+- [Multilingual Voice Learning — Enables students to learn and interact naturally through regional languages and voice.]
+- [Misconception & Learner Tracking — Detects why a student is struggling, builds a learning profile, and provides teachers with insights into common class-level gaps.]
 
 ## Innovation and Differentiation
 
-[Explain what is innovative about the approach and how it differs from existing or conventional solutions.]
+[1.  Misconception-Aware Learning
+
+Most AI tutors answer questions. EduNode identifies why a student is wrong and changes its teaching strategy accordingly.
+
+Wrong answer → identify misconception → targeted explanation → re-test.
+
+2.  Knowledge Graph + RAG
+
+EduNode doesn't just retrieve textbook paragraphs. It understands relationships between concepts and prerequisites.
+
+Quadratic Equations → Factorisation → Algebraic Expressions
+
+This allows it to trace a student's knowledge gap back to the underlying concept.
+
+3. 🇮🇳 True Multilingual Learning
+
+The entire learning experience can switch between:
+
+English • Hindi • Telugu • Tamil • Malayalam
+
+—not just the chatbot response.
+
+The UI, curriculum explanations, interaction and eventually voice experience can all follow the student's preferred language.
+
+4.  Curriculum-First AI
+
+Instead of giving generic internet-style answers, EduNode grounds learning in Class 10 NCERT curriculum and teacher-provided material.
+
+So:
+
+"Explain photosynthesis"
+
+becomes:
+
+"Explain photosynthesis according to my Class 10 curriculum, in my language, at my learning level."
+
+5.  Designed for Low-Connectivity Education
+
+EduNode is designed around the reality of rural classrooms:
+
+Internet available → AI-powered personalized tutoring
+
+Internet unavailable → cached curriculum + quizzes + Knowledge Graph + learner progress remain available
+
+The system doesn't become useless when connectivity disappears.]
 
 ## Technical Implementation
 
@@ -59,7 +103,7 @@ It also supports regional languages, voice interaction, teacher-uploaded study m
 | Category        | Technologies                |
 | --------------- | --------------------------- |
 | Frontend        | React 18, Vite, Tailwind CSS, Lucide Icons |
-| Backend         | [Technologies / N/A]        |
+| Backend         |  Python, FastAPI , Pydantic |
 | Database        | [Technologies / N/A]        |
 | AI / ML         | Gemma 2B, RAG               |
 | Infrastructure  | [Technologies / N/A]        |

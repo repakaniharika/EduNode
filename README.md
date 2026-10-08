@@ -58,10 +58,10 @@ It also supports regional languages, voice interaction, teacher-uploaded study m
 
 | Category        | Technologies                |
 | --------------- | --------------------------- |
-| Frontend        | [Technologies / N/A]        |
+| Frontend        | React 18, Vite, Tailwind CSS, Lucide Icons |
 | Backend         | [Technologies / N/A]        |
 | Database        | [Technologies / N/A]        |
-| AI / ML         | [Models / frameworks / N/A] |
+| AI / ML         | Gemma 2B, RAG               |
 | Infrastructure  | [Technologies / N/A]        |
 | APIs / Services | [Services / N/A]            |
 
@@ -82,66 +82,54 @@ If a category or technology is not implemented in the project, specify `N/A` ins
 
 ### Team Contributions
 
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
+- **Pavitra:** Designed & developed the Student Dashboard UI using React, Vite, and Tailwind CSS; implemented Curriculum Board/Language switchers, Subject Mastery cards, Misconception Radar, and interactive AI Tutor modal.
+- **Niharika:** Voice & Language integration.
+- **Daphna:** Curriculum Grounding & RAG pipeline.
+- **Harini:** Gemma AI Model & Misconception Detection logic.
 
 ## Working Application
 
-**Live Application:** [Live URL]
-
-[Briefly explain how the deployed application can be accessed and what functionality can be tested.]
-
-The submitted application should be functional and accessible through the provided link where applicable.
-
-## Demo Video
-
-**Demo Video:** [Video URL]
-
-[Provide a short demonstration of the working project, covering the main user flow and important functionality.]
+**Live Application:** http://localhost:5173
 
 ## Open Source and AI Usage
 
 ### AI / Models
 
-- **[Model]:** [How it is used]
+- **Gemma 2B:** Light-weight instruction tuned model used for adaptive student explanations and misconception detection.
 
 ### Open Source Components
 
-- **[Library / Framework]:** [Purpose]
-- **[Dataset]:** [Purpose]
-- **[API / Service]:** [Purpose]
-
-[Include relevant licenses, attribution, and acknowledgements for external components.]
+- **React 18:** Modern declarative UI library.
+- **Vite:** High performance frontend build tool and dev server.
+- **Tailwind CSS:** Utility-first styling framework.
+- **Lucide React:** Icons for educational categories and dashboard navigation.
 
 ## Setup and Usage
 
 ### Prerequisites
 
-- [Requirement]
-- [Requirement]
+- Node.js (v18 or higher)
+- npm or yarn
 
 ### Installation
 
 ```bash
-git clone [repository-url]
-cd [project-directory]
-[installation-command]
+git clone https://github.com/repakaniharika/EduNode.git
+cd EduNode
+npm install
 ```
 
 ### Environment Variables
 
 ```env
-[VARIABLE_NAME]=[value]
+VITE_APP_TITLE=EduNode
+VITE_API_BASE_URL=http://localhost:8000
 ```
-
-
 
 ### Running the Project
 
 ```bash
-[run-command]
+npm run dev
 ```
 
 ### Usage

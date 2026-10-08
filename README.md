@@ -9,10 +9,10 @@ EduNode is a multilingual, curriculum-aware AI tutor that detects student miscon
 
 | Member | Contribution   |
 | ------ | -------------- |
-| Pavitra |Student & Teacher Dashboard|
-| Niharika |Voice & Language|
-| Daphna  |Curriculum/RAG  |
-| Harini |AI/Gemma|
+| Niharika |Team Lead|
+| Pavitra | Team member |
+| Daphna  |Team member |
+| Harini |Team member |
 
 
 ## Problem Statement

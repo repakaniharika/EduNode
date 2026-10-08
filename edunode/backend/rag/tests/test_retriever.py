@@ -153,3 +153,67 @@ def test_retrieve_expands_search_until_requested_curriculum_is_found(monkeypatch
 
     assert requested_sizes == [5, 10]
     assert [result.board for result in response.results] == ["kerala"]
+
+def test_retrieve_reranks_by_curriculum_concept_without_changing_scores(monkeypatch):
+    non_concept_chunk = {
+        "board": "kerala",
+        "grade": 8,
+        "subject": "math",
+        "document_id": "generic-doc",
+        "document_name": "generic.pdf",
+        "text": "General curriculum",
+        "concept_ids": [],
+    }
+    concept_chunk = {
+        "board": "kerala",
+        "grade": 8,
+        "subject": "math",
+        "document_id": "concept-doc",
+        "document_name": "linear-equations.pdf",
+        "text": "Linear equations curriculum",
+        "concept_ids": ["linear_equations"],
+    }
+    monkeypatch.setattr(retriever_module, "embed_text", lambda _query: np.array([1.0]))
+    monkeypatch.setattr(
+        retriever_module.vector_store, "index", SimpleNamespace(ntotal=2)
+    )
+    monkeypatch.setattr(
+        retriever_module.vector_store,
+        "search",
+        lambda _embedding, top_k: [
+            (non_concept_chunk, 0.94),
+            (concept_chunk, 0.90),
+        ][:top_k],
+    )
+    monkeypatch.setattr(
+        retriever_module.concept_graph,
+        "get_concepts_for_embedding",
+        lambda *_args, **_kwargs: [
+            retriever_module.ConceptMatch(
+                concept_id="linear_equations",
+                name="Linear Equations",
+                score=0.9,
+            )
+        ],
+    )
+
+    response = retriever_module.retrieve(
+        RetrievalRequest(
+            query="How to solve linear equations?",
+            board="kerala",
+            grade=8,
+            subject="math",
+            top_k=1,
+        )
+    )
+
+    assert response.results[0].document_id == "concept-doc"
+    assert response.results[0].score == 0.90
+
+def test_reranking_preserves_vector_order_without_concept_matches():
+    ranked_results = [
+        ({"concept_ids": []}, 0.95),
+        ({"concept_ids": ["linear_equations"]}, 0.8),
+    ]
+
+    assert retriever_module.rerank_results(ranked_results, {}) is ranked_results

@@ -15,6 +15,8 @@ from edunode.backend.rag.config import MAX_TOP_K
 
 logger = logging.getLogger(__name__)
 
+CONCEPT_RERANK_WEIGHT = 0.15
+
 def filter_results(results: List[Tuple[Dict[str, Any], float]], req: RetrievalRequest) -> List[Tuple[Dict[str, Any], float]]:
     filtered = []
     for meta, score in results:
@@ -40,6 +42,23 @@ def filter_results(results: List[Tuple[Dict[str, Any], float]], req: RetrievalRe
             
         filtered.append((meta, score))
     return filtered
+
+def rerank_results(
+    results: List[Tuple[Dict[str, Any], float]],
+    concept_scores: Dict[str, float],
+) -> List[Tuple[Dict[str, Any], float]]:
+    if not concept_scores:
+        return results
+
+    def ranking_score(result: Tuple[Dict[str, Any], float]) -> float:
+        metadata, vector_score = result
+        matching_concept_score = max(
+            (concept_scores.get(concept_id, 0.0) for concept_id in metadata.get("concept_ids", [])),
+            default=0.0,
+        )
+        return vector_score + CONCEPT_RERANK_WEIGHT * matching_concept_score
+
+    return sorted(results, key=ranking_score, reverse=True)
 
 def build_context(results: List[RetrievalResult]) -> str:
     """
@@ -71,15 +90,27 @@ def retrieve(request: RetrievalRequest) -> RetrievalResponse:
     # 1. Embed query
     query_emb = embed_text(request.query)
     
-    # Expand the candidate window until enough matching results are found or the index is exhausted.
-    fetch_k = min(request.top_k * 5, vector_store.index.ntotal)
+    # Retain a bounded pool for reranking, while expanding when strict filters are selective.
+    candidate_count = min(request.top_k * 5, vector_store.index.ntotal)
+    fetch_k = min(candidate_count, vector_store.index.ntotal)
     filtered_results = []
     while fetch_k:
         raw_results = vector_store.search(query_emb, top_k=fetch_k)
         filtered_results = filter_results(raw_results, request)
-        if len(filtered_results) >= request.top_k or fetch_k >= vector_store.index.ntotal:
+        if len(filtered_results) >= candidate_count or fetch_k >= vector_store.index.ntotal:
             break
         fetch_k = min(fetch_k * 2, vector_store.index.ntotal)
+
+    query_concepts = concept_graph.get_concepts_for_embedding(
+        query_emb,
+        board=request.board,
+        grade=request.grade,
+        subject=request.subject,
+    )
+    query_concept_scores = {
+        concept.concept_id: concept.score for concept in query_concepts
+    }
+    filtered_results = rerank_results(filtered_results, query_concept_scores)
     
     # 4. Limit to top_k
     final_results = filtered_results[:request.top_k]

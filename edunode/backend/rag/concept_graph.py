@@ -89,17 +89,50 @@ class ConceptGraph:
             related=list(set(related))
         )
 
-    def map_query_to_concepts(self, query: str, top_k: int = 3, board: str = None, grade: int = None, subject: str = None) -> List[ConceptMatch]:
+    def map_query_to_concepts(
+        self,
+        query: str,
+        top_k: int = 3,
+        board: Optional[str] = None,
+        grade: Optional[int] = None,
+        subject: Optional[str] = None,
+    ) -> List[ConceptMatch]:
         if not self.concept_embeddings:
             return []
             
         query_emb = embed_text(query)
-        return self.get_concepts_for_embedding(query_emb, max_concepts=top_k)
+        return self.get_concepts_for_embedding(
+            query_emb,
+            max_concepts=top_k,
+            board=board,
+            grade=grade,
+            subject=subject,
+        )
 
-    def get_concepts_for_embedding(self, embedding: np.ndarray, max_concepts: int = MAX_CONCEPTS_PER_CHUNK) -> List[ConceptMatch]:
+    def get_concepts_for_embedding(
+        self,
+        embedding: np.ndarray,
+        max_concepts: int = MAX_CONCEPTS_PER_CHUNK,
+        board: Optional[str] = None,
+        grade: Optional[int] = None,
+        subject: Optional[str] = None,
+    ) -> List[ConceptMatch]:
         """Calculates semantic similarity of an embedding against the concept graph."""
         matches = []
         for cid, emb in self.concept_embeddings.items():
+            if any(value is not None for value in (board, grade, subject)):
+                mappings = self.concepts[cid].get("curriculum_mappings", [])
+                if not any(
+                    (board is None or str(mapping.get("board", "")).casefold() == board.casefold())
+                    and (grade is None or mapping.get("grade") == grade)
+                    and (
+                        subject is None
+                        or str(mapping.get("subject", "")).casefold() == subject.casefold()
+                    )
+                    for mapping in mappings
+                ):
+                    continue
+
             score = float(np.dot(embedding, emb))
             if score >= CONCEPT_SIMILARITY_THRESHOLD:
                 c_name = self.concepts[cid].get("name", cid)

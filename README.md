@@ -136,7 +136,7 @@ If a category or technology is not implemented in the project, specify `N/A` ins
 **Live Application:** http://localhost:5173
 
 ## Open Source and AI Usage
-
+https://clever-study-bloom.lovable.app/
 ### AI / Models
 
 - **Gemma 2B:** Light-weight instruction tuned model used for adaptive student explanations and misconception detection.

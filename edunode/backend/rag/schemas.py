@@ -1,5 +1,6 @@
 from typing import List, Optional, Dict, Any, Literal
 from pydantic import BaseModel, Field, field_validator
+from edunode.backend.rag.config import DEFAULT_TOP_K, MAX_TOP_K
 
 # Supported Enums using Literal for validation
 SupportedBoard = Literal["cbse", "tamil_nadu", "kerala", "andhra_pradesh", "telangana"]
@@ -14,7 +15,7 @@ class CurriculumChunk(BaseModel):
     
     board: SupportedBoard
     grade: SupportedGrade
-    subject: str
+    subject: str = Field(min_length=1)
     
     medium: Optional[str] = None
     textbook: Optional[str] = None
@@ -35,7 +36,7 @@ class CurriculumDocument(BaseModel):
     
     board: SupportedBoard
     grade: SupportedGrade
-    subject: str
+    subject: str = Field(min_length=1)
     
     medium: Optional[str] = None
     textbook: Optional[str] = None
@@ -48,7 +49,7 @@ class CurriculumDocument(BaseModel):
 class CurriculumMapping(BaseModel):
     board: SupportedBoard
     grade: SupportedGrade
-    subject: str
+    subject: str = Field(min_length=1)
     chapter: str
 
 class Concept(BaseModel):
@@ -80,13 +81,13 @@ class RetrievalRequest(BaseModel):
     query: str
     board: SupportedBoard
     grade: SupportedGrade
-    subject: str
+    subject: str = Field(min_length=1)
     medium: Optional[str] = None
     textbook: Optional[str] = None
     academic_year: Optional[str] = None
     chapter: Optional[str] = None
     document_id: Optional[str] = None
-    top_k: int = 5
+    top_k: int = Field(default=DEFAULT_TOP_K, ge=1, le=MAX_TOP_K)
 
 class RetrievalResult(BaseModel):
     text: str

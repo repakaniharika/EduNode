@@ -9,6 +9,9 @@ logger = logging.getLogger(__name__)
 # Lazy initialization of the model
 _model = None
 
+def get_embedding_model_name() -> str:
+    return EMBEDDING_MODEL
+
 def get_model() -> SentenceTransformer:
     global _model
     if _model is None:

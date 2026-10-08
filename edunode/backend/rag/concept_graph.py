@@ -15,23 +15,47 @@ class ConceptGraph:
         self.concept_embeddings: Dict[str, np.ndarray] = {}
         
     def load_from_json(self, file_path: str):
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                
-            for c in data.get("concepts", []):
-                cid = c.get("concept_id")
-                if cid:
-                    self.concepts[cid] = c
-                    
-            for r in data.get("relationships", []):
-                self.relationships.append(r)
-                
-            logger.info(f"Loaded {len(self.concepts)} concepts and {len(self.relationships)} relationships from {file_path}")
-            self._compute_embeddings()
-            
-        except Exception as e:
-            logger.error(f"Failed to load concept graph from {file_path}: {e}")
+        with open(file_path, "r", encoding="utf-8") as graph_file:
+            data = json.load(graph_file)
+        if not isinstance(data, dict):
+            raise ValueError("Concept graph must be a JSON object.")
+
+        concepts = data.get("concepts", [])
+        relationships = data.get("relationships", [])
+        if not isinstance(concepts, list) or not isinstance(relationships, list):
+            raise ValueError("Concept graph concepts and relationships must be arrays.")
+
+        loaded_concepts = {}
+        for concept in concepts:
+            if not isinstance(concept, dict) or not isinstance(concept.get("concept_id"), str):
+                raise ValueError("Every concept must have a string concept_id.")
+            concept_id = concept["concept_id"]
+            if concept_id in loaded_concepts:
+                raise ValueError(f"Duplicate concept_id in concept graph: {concept_id}")
+            loaded_concepts[concept_id] = concept
+
+        for relationship in relationships:
+            if (
+                not isinstance(relationship, dict)
+                or not all(
+                    isinstance(relationship.get(key), str)
+                    for key in ("source", "target", "relation")
+                )
+            ):
+                raise ValueError(
+                    "Every concept relationship needs string source, target, and relation fields."
+                )
+
+        self.concepts = loaded_concepts
+        self.relationships = relationships
+        self.concept_embeddings = {}
+        self._compute_embeddings()
+        logger.info(
+            "Loaded %s concepts and %s relationships from %s",
+            len(self.concepts),
+            len(self.relationships),
+            file_path,
+        )
 
     def _compute_embeddings(self):
         logger.info("Computing embeddings for concept graph matching...")

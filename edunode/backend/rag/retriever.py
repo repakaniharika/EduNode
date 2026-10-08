@@ -11,6 +11,7 @@ from edunode.backend.rag.schemas import (
     CurriculumMetadata
 )
 from collections import defaultdict
+from edunode.backend.rag.config import MAX_TOP_K
 
 logger = logging.getLogger(__name__)
 
@@ -20,21 +21,21 @@ def filter_results(results: List[Tuple[Dict[str, Any], float]], req: RetrievalRe
         # STRICT Filtering: If a field is provided in the request, it MUST exactly match the metadata.
         # Missing metadata for a requested field results in rejection.
         
-        if req.board and str(meta.get("board")).lower() != str(req.board).lower():
+        if str(meta.get("board")).lower() != str(req.board).lower():
             continue
         if req.grade is not None and meta.get("grade") != req.grade:
             continue
-        if req.subject and str(meta.get("subject")).lower() != str(req.subject).lower():
+        if str(meta.get("subject")).lower() != str(req.subject).lower():
             continue
-        if req.medium and str(meta.get("medium")).lower() != str(req.medium).lower():
+        if req.medium is not None and str(meta.get("medium")).lower() != str(req.medium).lower():
             continue
-        if req.textbook and str(meta.get("textbook")).lower() != str(req.textbook).lower():
+        if req.textbook is not None and str(meta.get("textbook")).lower() != str(req.textbook).lower():
             continue
-        if req.academic_year and str(meta.get("academic_year")).lower() != str(req.academic_year).lower():
+        if req.academic_year is not None and str(meta.get("academic_year")).lower() != str(req.academic_year).lower():
             continue
-        if req.chapter and str(meta.get("chapter")).lower() != str(req.chapter).lower():
+        if req.chapter is not None and str(meta.get("chapter")).lower() != str(req.chapter).lower():
             continue
-        if req.document_id and str(meta.get("document_id")) != str(req.document_id):
+        if req.document_id is not None and str(meta.get("document_id")) != str(req.document_id):
             continue
             
         filtered.append((meta, score))
@@ -64,16 +65,21 @@ def build_context(results: List[RetrievalResult]) -> str:
 
 def retrieve(request: RetrievalRequest) -> RetrievalResponse:
     logger.info(f"Retrieval query: {request.query}")
+    if request.top_k < 1 or request.top_k > MAX_TOP_K:
+        raise ValueError(f"top_k must be between 1 and {MAX_TOP_K}.")
     
     # 1. Embed query
     query_emb = embed_text(request.query)
     
-    # 2. Search FAISS (fetch large to allow strict filtering)
-    fetch_k = request.top_k * 5
-    raw_results = vector_store.search(query_emb, top_k=fetch_k)
-    
-    # 3. Apply STRICT metadata filtering
-    filtered_results = filter_results(raw_results, request)
+    # Expand the candidate window until enough matching results are found or the index is exhausted.
+    fetch_k = min(request.top_k * 5, vector_store.index.ntotal)
+    filtered_results = []
+    while fetch_k:
+        raw_results = vector_store.search(query_emb, top_k=fetch_k)
+        filtered_results = filter_results(raw_results, request)
+        if len(filtered_results) >= request.top_k or fetch_k >= vector_store.index.ntotal:
+            break
+        fetch_k = min(fetch_k * 2, vector_store.index.ntotal)
     
     # 4. Limit to top_k
     final_results = filtered_results[:request.top_k]

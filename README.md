@@ -16,15 +16,17 @@ Currently natively supports the following board frameworks (Classes 6-12):
 4. **andhra_pradesh** (AP State Board)
 5. **telangana** (TS State Board)
 
-Multilingual mediums (English, Malayalam, Tamil, Telugu) are fully supported.
+English, Malayalam, Tamil, and Telugu curriculum text is supported using a multilingual
+Sentence Transformers model by default. Set `EMBEDDING_MODEL` to select another
+compatible model; changing models re-embeds stored chunks from their saved text.
 
 ## Architecture
 
 1. **Parser & Cleaner**: Extracts text using PyMuPDF and cleans PDF artifacts.
-2. **Chunker**: Uses heuristics (paragraphs, headings) to group text while respecting token limits and keeping chunks educationally meaningful. Preserves strict metadata.
-3. **Embeddings**: Uses `sentence-transformers` (default `all-MiniLM-L6-v2`) to generate vector representations. *Note: Optimized for English; multi-lingual retrieval may degrade slightly depending on the exact model.*
-4. **Vector Store**: Uses `FAISS` (FlatIP) to index embeddings, mapping vector IDs to chunk metadata. Persists locally and automatically migrates legacy schemas.
-5. **Retriever**: Embeds queries and searches the vector store, applying **strict curriculum filters**. A chunk must match every requested curriculum metadata field.
+2. **Chunker**: Uses paragraph and heading heuristics to group text near the configured character limit while keeping chunks educationally meaningful. Preserves strict curriculum metadata.
+3. **Embeddings**: Uses `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` by default for multilingual vector representations.
+4. **Vector Store**: Uses `FAISS` (FlatIP) to index embeddings, mapping vector IDs to chunk metadata. Persists locally, records the embedding-model identity, and re-embeds and remaps stored chunks when that model changes. Legacy chunks missing board or grade metadata remain stored but cannot pass strict curriculum retrieval.
+5. **Retriever**: Embeds queries and searches the vector store, applying **strict curriculum filters**. Board, grade, and subject must match; any supplied optional curriculum field must also match. The candidate search expands until enough filtered results are found or the index is exhausted.
 6. **Concept Graph**: A JSON-driven ontology (`concept_graph.json`) that maps out how curriculum topics relate (e.g., `prerequisite_for`) and includes `curriculum_mappings` for board-specific chapters. Automatically maps semantic chunks to concepts during ingestion.
 7. **FastAPI Routes**: Clean, decoupled API endpoints integrating Member 3's module with the rest of EduNode.
 

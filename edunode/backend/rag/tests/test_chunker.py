@@ -7,7 +7,14 @@ def test_chunker_respects_size():
         {"page": 2, "raw_text": "C" * 800}
     ]
     
-    chunks = chunk_document(pages_data, "doc1", "doc1.pdf")
+    chunks = chunk_document(
+        pages_data,
+        "doc1",
+        "doc1.pdf",
+        board="cbse",
+        grade=8,
+        subject="mathematics",
+    )
     
     # Each chunk should ideally not exceed CHUNK_SIZE substantially, 
     # but since our heuristic splits by paragraph, a single huge paragraph 

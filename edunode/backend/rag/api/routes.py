@@ -1,5 +1,6 @@
 import os
 import shutil
+import tempfile
 import logging
 from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 from typing import Optional, Literal
@@ -22,7 +23,7 @@ async def upload_document(
     file: UploadFile = File(...),
     board: SupportedBoard = Form(...),
     grade: SupportedGrade = Form(...),
-    subject: str = Form(...),
+    subject: str = Form(..., min_length=1),
     medium: Optional[str] = Form(None),
     textbook: Optional[str] = Form(None),
     academic_year: Optional[str] = Form(None)
@@ -31,12 +32,13 @@ async def upload_document(
     Uploads a curriculum PDF, extracts text, chunks it, embeds it,
     maps concepts, and stores it in FAISS with strict curriculum metadata.
     """
-    if not file.filename.endswith(".pdf"):
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
         
-    temp_path = f"temp_{file.filename}"
+    temp_path = None
     try:
-        with open(temp_path, "wb") as buffer:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as buffer:
+            temp_path = buffer.name
             shutil.copyfileobj(file.file, buffer)
             
         logger.info(f"Received document: {file.filename} for {board} Grade {grade} {subject}")
@@ -56,7 +58,7 @@ async def upload_document(
             
         return response
     finally:
-        if os.path.exists(temp_path):
+        if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
 
 @router.post("/retrieve", response_model=RetrievalResponse)

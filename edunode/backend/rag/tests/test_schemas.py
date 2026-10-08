@@ -59,3 +59,25 @@ def test_class_5_rejected():
 def test_class_13_rejected():
     with pytest.raises(ValidationError):
         RetrievalRequest(query="test", board="cbse", grade=13, subject="math")
+
+def test_empty_subject_rejected():
+    with pytest.raises(ValidationError):
+        RetrievalRequest(query="test", board="cbse", grade=8, subject="")
+
+@pytest.mark.parametrize("medium", ["english", "malayalam", "tamil", "telugu"])
+def test_multilingual_medium_metadata_accepted(medium):
+    request = RetrievalRequest(
+        query="test", board="kerala", grade=8, subject="math", medium=medium
+    )
+    assert request.medium == medium
+
+def test_top_k_must_be_between_one_and_fifty():
+    for invalid_top_k in (0, 51):
+        with pytest.raises(ValidationError):
+            RetrievalRequest(
+                query="test",
+                board="cbse",
+                grade=8,
+                subject="math",
+                top_k=invalid_top_k,
+            )

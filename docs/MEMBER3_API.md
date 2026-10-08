@@ -21,6 +21,11 @@ This document outlines the API contracts for the Member 3 RAG and Concept Graph 
 - `textbook`: (String, Optional) Textbook name.
 - `academic_year`: (String, Optional) E.g., "2026-27".
 
+The supported board IDs are `cbse`, `tamil_nadu`, `kerala`, `andhra_pradesh`,
+and `telangana`; grades are 6 through 12. English, Malayalam, Tamil, and Telugu
+mediums are accepted. The `medium` value is curriculum metadata and remains
+optional.
+
 ### Response
 ```json
 {
@@ -53,6 +58,13 @@ Provides strictly-filtered context-grounded curriculum material to be passed to 
   "top_k": 5
 }
 ```
+
+The required board, grade, and subject filters are exact curriculum constraints:
+results missing those metadata fields or belonging to another curriculum are
+excluded. Optional `medium`, `textbook`, `academic_year`, `chapter`, and
+`document_id` filters are also exact when supplied. `top_k` must be between 1
+and 50; retrieval expands its vector-search window as needed to fill the result
+count without relaxing filters.
 
 ### Response
 ```json

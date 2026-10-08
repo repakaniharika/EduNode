@@ -1,6 +1,9 @@
 import pytest
 from edunode.backend.rag.retriever import filter_results
+import edunode.backend.rag.retriever as retriever_module
 from edunode.backend.rag.schemas import RetrievalRequest
+from types import SimpleNamespace
+import numpy as np
 
 def test_strict_board_filtering():
     req = RetrievalRequest(query="test", board="kerala", grade=8, subject="math")
@@ -52,6 +55,33 @@ def test_strict_medium_filtering():
     assert len(filtered) == 1
     assert filtered[0][0]["medium"] == "malayalam"
 
+@pytest.mark.parametrize(
+    ("filter_field", "metadata_field"),
+    [
+        ("medium", "medium"),
+        ("textbook", "textbook"),
+        ("academic_year", "academic_year"),
+        ("chapter", "chapter"),
+        ("document_id", "document_id"),
+    ],
+)
+def test_empty_optional_filter_is_still_applied(filter_field, metadata_field):
+    req = RetrievalRequest(
+        query="test",
+        board="kerala",
+        grade=8,
+        subject="math",
+        **{filter_field: ""},
+    )
+    metadata = {
+        "board": "kerala",
+        "grade": 8,
+        "subject": "math",
+        metadata_field: "non-empty value",
+    }
+
+    assert filter_results([(metadata, 0.9)], req) == []
+
 def test_source_traceability():
     # Verify that all new metadata fields are actually persisted and expected
     # The new retrieval response mapping requires all these fields to be accessible
@@ -84,3 +114,42 @@ def test_source_traceability():
     assert meta["chapter"] == "Kinematics"
     assert meta["page_start"] == 42
     assert meta["page_end"] == 43
+
+def test_retrieve_expands_search_until_requested_curriculum_is_found(monkeypatch):
+    matching_chunk = {
+        "board": "kerala",
+        "grade": 8,
+        "subject": "math",
+        "document_id": "kerala-doc",
+        "document_name": "kerala.pdf",
+        "text": "Kerala-only curriculum",
+        "concept_ids": [],
+    }
+    ranked_results = [
+        ({"board": "cbse", "grade": 8, "subject": "math"}, 1.0 - i / 100)
+        for i in range(9)
+    ] + [(matching_chunk, 0.1)]
+    requested_sizes = []
+
+    monkeypatch.setattr(retriever_module, "embed_text", lambda _query: np.array([1.0]))
+    monkeypatch.setattr(
+        retriever_module.vector_store, "index", SimpleNamespace(ntotal=10)
+    )
+
+    def search(_embedding, top_k):
+        requested_sizes.append(top_k)
+        return ranked_results[:top_k]
+
+    monkeypatch.setattr(retriever_module.vector_store, "search", search)
+    request = RetrievalRequest(
+        query="curriculum question",
+        board="kerala",
+        grade=8,
+        subject="math",
+        top_k=1,
+    )
+
+    response = retriever_module.retrieve(request)
+
+    assert requested_sizes == [5, 10]
+    assert [result.board for result in response.results] == ["kerala"]

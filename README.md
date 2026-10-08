@@ -37,16 +37,45 @@ Student asks → EduNode understands → retrieves the relevant curriculum → e
 It also supports regional languages, voice interaction, teacher-uploaded study material, and learner progress tracking, giving both students and teachers a more personalized learning experience.
 
 ### Key Features
-
-- [Adaptive AI Tutor — Understands each student’s responses and dynamically adjusts explanations and difficulty.]
-- []
-- [Feature 3]
-- [Feature 4]
+ Adaptive AI Tutor
+Understands student responses and dynamically adapts explanations based on the student's demonstrated understanding.
+ Curriculum-Grounded Learning
+Uses relevant curriculum and educational material to ground AI responses instead of relying solely on general-purpose model knowledge.
+ Multilingual Voice Interaction
+Supports interaction across:
+- English
+- Malayalam
+- Tamil
+- Hindi
+- Kannada
+- Bengali
+Students can interact naturally using speech and receive responses in their selected language.
+ Misconception Detection
+Analyzes student responses to identify conceptual misunderstandings rather than simply marking answers as right or wrong.
+ Adaptive Teaching
+When a misconception is detected, EduNode changes its explanation strategy to address the specific conceptual gap.
+ Teacher Insights
+Aggregates student learning information to highlight common misconceptions and areas where students may need additional support.
 
 ## Innovation and Differentiation
-
-[Explain what is innovative about the approach and how it differs from existing or conventional solutions.]
-
+EduNode is not designed as a conventional question-answer chatbot.
+Its core idea is to model where a student's understanding breaks down and use that information to adapt subsequent teaching.
+The system combines four layers:
+Multilingual Interaction
+        +
+Curriculum Grounding
+        +
+Misconception Detection
+        +
+Adaptive Teaching
+Unlike generic AI tutors that primarily generate answers, EduNode attempts to understand:
+- What the student is asking
+- Which curriculum the student is following
+- What the student currently understands
+- Where their reasoning goes wrong
+- How the explanation should change
+- What learning gaps are appearing across students
+The system is also designed around Indian regional-language interaction, making the learning experience less dependent on English-only communication.
 ## Technical Implementation
 
 ### Architecture

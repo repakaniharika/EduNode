@@ -23,6 +23,7 @@ from .adaptive_engine import AdaptiveEngine
 from .knowledge_state import KnowledgeStateManager
 from .knowledge_graph import KnowledgeGraph
 from .prompts import SYSTEM_PROMPT_SOCRATIC_TUTOR, PROMPT_ADAPTIVE_RESPONSE
+from ..rag.service import RAGService
 
 router = APIRouter(prefix="/api/tutor", tags=["Tutor - Member 2 (AI/Gemma)"])
 
@@ -32,6 +33,7 @@ _misconception_detector = MisconceptionDetector(gemma_client=_gemma_client)
 _adaptive_engine = AdaptiveEngine()
 _knowledge_state_mgr = KnowledgeStateManager()
 _knowledge_graph = KnowledgeGraph()
+_rag_service = RAGService()
 
 
 @router.post("/chat", response_model=TutorResponse)
@@ -45,6 +47,10 @@ async def chat_with_tutor(request: TutorRequest) -> TutorResponse:
     6. Return TutorResponse
     """
     try:
+        # Step 0: RAG Context Retrieval
+        if not request.curriculum_context:
+            request.curriculum_context = _rag_service.get_context(request.message, request.topic_id)
+
         # Step 1 & 2: Detect potential misconceptions in student input
         misconception: MisconceptionAnalysis = _misconception_detector.detect(
             message=request.message,

@@ -1,38 +1,45 @@
-# [Project Name]
+## EduNode
 
-> [One-line description of the project and what it does.]
+EduNode is a multilingual, curriculum-aware AI tutor that detects student misconceptions and adapts its teaching in real time to improve learning outcomes.
 
-## Team
 
-**Team Name:** [Team Name]
+## Team Banger 
+
 
 
 | Member | Contribution   |
 | ------ | -------------- |
-| [Name] | [Contribution] |
-| [Name] | [Contribution] |
-| [Name] | [Contribution] |
-| [Name] | [Contribution] |
+| Pavitra |Student & Teacher Dashboard|
+| Niharika |Voice & Language|
+| Daphna  |Curriculum/RAG  |
+| Harini |AI/Gemma|
 
 
 ## Problem Statement
+Students receive answers, but not truly personalized learning.
 
-### The Problem
+ ## The Problem
 
-[Describe the problem being addressed, who is affected by it, and the context in which it occurs.]
+Most existing learning platforms provide generic, English-first answers without understanding a student’s curriculum, misconceptions, learning level, or regional language, making personalized education difficult—especially in low-connectivity environments.
 
 ### Why We Chose This Problem
 
-[Explain why the team selected this problem and why solving it is important.]
+Because every student learns differently, but most educational tools teach everyone the same way. We wanted to build an AI tutor that understands the student, not just the question.
 
 ## Solution
 
-[Describe the proposed solution and how it addresses the problem.]
+EduNode is a multilingual, curriculum-grounded AI tutor that identifies a student’s misconceptions and adapts its teaching to their individual learning needs.
+
+It works through a simple cycle:
+
+Student asks → EduNode understands → retrieves the relevant curriculum → explains → evaluates the student’s response → detects misconceptions → adapts the next explanation.
+
+It also supports regional languages, voice interaction, teacher-uploaded study material, and learner progress tracking, giving both students and teachers a more personalized learning experience.
 
 ### Key Features
 
-- [Feature 1]
-- [Feature 2]
+- [Adaptive AI Tutor — Understands each student’s responses and dynamically adjusts explanations and difficulty.]
+- []
 - [Feature 3]
 - [Feature 4]
 

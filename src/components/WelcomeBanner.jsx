@@ -1,108 +1,164 @@
-import React from 'react';
-import { ArrowRight, Bot, Flame, Sparkles, Award, CheckCircle2, BookOpen } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Bot, Mic, Send, Sparkles, Flame, CheckCircle2, BookOpen } from 'lucide-react';
+import { getTranslation } from '../data/translations';
+import { CURRICULUM_BOARDS } from '../data/mockData';
 
-export default function WelcomeBanner({ student, onOpenAskModal, onContinueLearning }) {
+export default function WelcomeBanner({ 
+  student, 
+  selectedLang, 
+  selectedBoard,
+  onOpenAskModal, 
+  onContinueLearning 
+}) {
+  const [quickInput, setQuickInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const t = getTranslation(selectedLang);
+
+  const currentBoard = CURRICULUM_BOARDS.find(b => b.id === selectedBoard) || CURRICULUM_BOARDS[0];
+  const greetingText = t.greeting.replace('{name}', student.name);
+  const subtitleText = t.heroSubtitle.replace('{board}', currentBoard.name);
+
+  const handleQuickSubmit = (e) => {
+    e.preventDefault();
+    if (!quickInput.trim()) return;
+    onOpenAskModal(quickInput);
+    setQuickInput('');
+  };
+
+  const handleVoiceClick = () => {
+    if (!isListening) {
+      setIsListening(true);
+      setTimeout(() => {
+        setIsListening(false);
+        const sampleQuery = selectedLang === 'ta' 
+          ? "இருபடி சமன்பாட்டின் மூலங்களின் தன்மையை எவ்வாறு கண்டறிவது?" 
+          : selectedLang === 'te'
+          ? "వర్గ సమీకరణాల మూలాల స్వభావాన్ని ఎలా కనుగొనాలి?"
+          : selectedLang === 'ml'
+          ? "രണ്ടാം കൃതി സമവാക്യങ്ങളുടെ മൂലങ്ങളുടെ സ്വഭാവം എങ്ങനെ നിർണ്ണയിക്കും?"
+          : selectedLang === 'hi'
+          ? "विविक्तकर b² - 4ac की सहायता से मूलों की प्रकृति कैसे ज्ञात करें?"
+          : "How do I find the nature of roots using discriminant b² - 4ac?";
+        setQuickInput(sampleQuery);
+      }, 1500);
+    } else {
+      setIsListening(false);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-8">
-      {/* Main Greeting Banner (Takes 8 cols) */}
-      <div className="lg:col-span-8 bg-gradient-to-r from-[#eef4ff] via-[#f3f9f7] to-[#e8fbf3] rounded-3xl p-7 border border-emerald-100/80 shadow-sm relative overflow-hidden flex flex-col justify-between">
-        {/* Subtle decorative circles */}
-        <div className="absolute top-0 right-1/4 w-48 h-48 bg-emerald-200/20 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="absolute bottom-0 right-10 w-36 h-36 bg-blue-200/20 rounded-full blur-xl pointer-events-none"></div>
-
-        <div className="relative z-10 max-w-lg">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 text-xs font-semibold mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Adaptive Tutor Active • NCERT Class 10
+    <div className="space-y-4 mb-6">
+      {/* Sleek Minimalist Hero Box */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/70 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="max-w-xl">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold mb-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>{currentBoard.name} {student.grade} • {t.syllabusActive}</span>
           </div>
 
-          <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-800 tracking-tight font-outfit">
-            Good Morning, {student.name}! ☀️
-          </h2>
-
-          <p className="text-slate-600 text-sm mt-2 leading-relaxed font-medium">
-            Keep going! Your hard work today builds a brighter future tomorrow. EduNode detected 
-            <span className="text-emerald-700 font-bold mx-1 underline decoration-emerald-300">1 sign misconception in Math</span> 
-            and adapted your practice drill!
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight font-outfit">
+            {greetingText}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+            {subtitleText}
           </p>
-
-          <div className="flex flex-wrap items-center gap-3 mt-6">
-            <button
-              onClick={onContinueLearning}
-              className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-500/20 transition-all hover:gap-3"
-            >
-              <span>Continue Learning</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-
-            <button
-              onClick={onOpenAskModal}
-              className="px-4 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-2 border border-slate-200/80 shadow-sm transition-all"
-            >
-              <Bot className="w-4 h-4 text-emerald-600" />
-              <span>Ask EduNode AI</span>
-            </button>
-          </div>
         </div>
 
-        {/* Cute Mascot & Motto on Right */}
-        <div className="hidden sm:flex absolute right-6 bottom-4 flex-col items-center pointer-events-none select-none">
-          <div className="text-6xl filter drop-shadow-md transform hover:rotate-6 transition-transform">
-            🌱
-          </div>
-          <div className="mt-2 text-center">
-            <span className="text-[11px] font-bold text-slate-700 font-handwriting block">
-              Learn Anytime, Anywhere
-            </span>
-            <span className="text-[10px] text-emerald-600 font-semibold">
-              Gemma-powered ✨
-            </span>
-          </div>
+        {/* Quick action button */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={onContinueLearning}
+            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+          >
+            <span>{t.continueLearning}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      {/* Top 3 Quick Stats Cards (Takes 4 cols, like reference image) */}
-      <div className="lg:col-span-4 grid grid-cols-3 lg:grid-cols-1 gap-3.5">
-        {/* Stat 1: Subjects */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between card-hover">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">Enrolled Subjects</div>
-              <div className="text-lg font-extrabold text-slate-800">5</div>
+      {/* Embedded Quick Doubt Ask Bar */}
+      <form
+        onSubmit={handleQuickSubmit}
+        className="bg-white rounded-2xl p-2 pl-3 border border-slate-200/70 shadow-sm flex items-center gap-2"
+      >
+        <button
+          type="button"
+          onClick={handleVoiceClick}
+          className={`p-2 rounded-xl transition-colors ${
+            isListening
+              ? 'bg-rose-50 text-rose-600 animate-pulse border border-rose-200'
+              : 'hover:bg-slate-100 text-slate-500'
+          }`}
+          title={isListening ? t.listeningVoice : t.voiceButton}
+        >
+          <Mic className="w-4 h-4" />
+        </button>
+
+        <input
+          type="text"
+          value={quickInput}
+          onChange={(e) => setQuickInput(e.target.value)}
+          placeholder={isListening ? t.listeningVoice : t.quickDoubtPlaceholder}
+          className="flex-1 bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+        />
+
+        <button
+          type="submit"
+          className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-sm shrink-0"
+        >
+          <Bot className="w-3.5 h-3.5 text-emerald-400" />
+          <span>{t.askButton}</span>
+        </button>
+      </form>
+
+      {/* Minimal Key Metrics Bar (4 clean inline metric cards) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/70 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] text-slate-400 font-medium">{t.masteryLabel}</div>
+            <div className="text-lg font-bold text-slate-900 font-outfit mt-0.5">
+              {student.overallMastery}%
             </div>
           </div>
-          <span className="text-[10px] font-semibold text-blue-600 hidden sm:inline">Active</span>
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">
+            ✓
+          </div>
         </div>
 
-        {/* Stat 2: Misconceptions Cleared */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between card-hover">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">Cleared Doubts</div>
-              <div className="text-lg font-extrabold text-slate-800">14</div>
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/70 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] text-slate-400 font-medium">{t.streakLabel}</div>
+            <div className="text-lg font-bold text-slate-900 font-outfit mt-0.5">
+              {student.streakDays} Days
             </div>
           </div>
-          <span className="text-[10px] font-semibold text-emerald-600 hidden sm:inline">+2 this week</span>
+          <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">
+            🔥
+          </div>
         </div>
 
-        {/* Stat 3: Streak / Mastery */}
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between card-hover">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-              <Flame className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs text-slate-400 font-medium">Daily Streak</div>
-              <div className="text-lg font-extrabold text-slate-800">5 Days</div>
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/70 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] text-slate-400 font-medium">{t.clearedLabel}</div>
+            <div className="text-lg font-bold text-slate-900 font-outfit mt-0.5">
+              {student.misconceptionsCleared}
             </div>
           </div>
-          <span className="text-[10px] font-semibold text-amber-600 hidden sm:inline">🔥 Superb</span>
+          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">
+            🧠
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-3.5 border border-slate-200/70 flex items-center justify-between">
+          <div>
+            <div className="text-[11px] text-slate-400 font-medium">{t.enrolledLabel}</div>
+            <div className="text-lg font-bold text-slate-900 font-outfit mt-0.5">
+              5
+            </div>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold">
+            📚
+          </div>
         </div>
       </div>
     </div>

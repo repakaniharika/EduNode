@@ -20,36 +20,43 @@ export default function App() {
 
   // Modals state
   const [isAskModalOpen, setIsAskModalOpen] = useState(false);
+  const [askInitialQuery, setAskInitialQuery] = useState('');
   const [isConceptMapOpen, setIsConceptMapOpen] = useState(false);
   const [isMisconceptionsOpen, setIsMisconceptionsOpen] = useState(false);
   const [activeSubjectModal, setActiveSubjectModal] = useState(null);
+
+  const handleOpenAskModal = (initialText = '') => {
+    setAskInitialQuery(initialText);
+    setIsAskModalOpen(true);
+  };
 
   const handleOpenSubject = (subject) => {
     setActiveSubjectModal(subject);
   };
 
   const handleAskDoubtForSubject = (subject) => {
-    setIsAskModalOpen(true);
+    handleOpenAskModal(`I have a doubt regarding ${subject.name}: ${subject.activeChapter}`);
   };
 
   const handleAskAboutConcept = (conceptName) => {
-    setIsAskModalOpen(true);
+    handleOpenAskModal(`Can you explain the intuition behind: ${conceptName}?`);
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] flex text-slate-800 antialiased font-sans">
-      {/* Left Navigation Sidebar */}
+    <div className="min-h-screen bg-[#fcfdfd] flex text-slate-800 antialiased font-sans">
+      {/* Minimal Left Sidebar */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenAskModal={() => setIsAskModalOpen(true)}
+        selectedLang={selectedLang}
+        onOpenAskModal={() => handleOpenAskModal()}
         onOpenConceptMap={() => setIsConceptMapOpen(true)}
         onOpenMisconceptions={() => setIsMisconceptionsOpen(true)}
       />
 
-      {/* Main App Content Area */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Sticky Top Header */}
+        {/* Minimal Top Header */}
         <TopHeader
           student={student}
           selectedBoard={selectedBoard}
@@ -58,40 +65,45 @@ export default function App() {
           setSelectedClass={setSelectedClass}
           selectedLang={selectedLang}
           setSelectedLang={setSelectedLang}
-          onOpenAskModal={() => setIsAskModalOpen(true)}
+          onOpenAskModal={() => handleOpenAskModal()}
         />
 
-        {/* Dashboard Body with 2-Column layout (Main grid + Right sidebar) */}
-        <main className="flex-1 p-6 lg:p-8 max-w-[1600px] w-full mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        {/* Dashboard Body */}
+        <main className="flex-1 p-6 lg:p-8 max-w-[1500px] w-full mx-auto">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
             
-            {/* Center Main Stage (8 cols on XL screens) */}
+            {/* Primary Main Content (8 cols on XL screens) */}
             <div className="xl:col-span-8 space-y-2">
-              {/* 1. Welcome Greeting Banner + Quick Stat Cards */}
+              {/* 1. Minimalist Hero + Doubt Bar + Clean Metrics */}
               <WelcomeBanner
                 student={student}
-                onOpenAskModal={() => setIsAskModalOpen(true)}
+                selectedLang={selectedLang}
+                selectedBoard={selectedBoard}
+                onOpenAskModal={handleOpenAskModal}
                 onContinueLearning={() => handleOpenSubject(SUBJECTS_DATA[0])}
               />
 
-              {/* 2. My Subjects Grid (The 5 Subjects) */}
+              {/* 2. Sleek Subjects Overview */}
               <SubjectsGrid
+                selectedLang={selectedLang}
                 onSubjectClick={handleOpenSubject}
                 onAskDoubtForSubject={handleAskDoubtForSubject}
               />
 
-              {/* 3. Learning Progress Donut + Recent Activity Trail */}
+              {/* 3. Balanced Learning Focus (Misconceptions + Activity) */}
               <ProgressAndActivity
-                onOpenAskModal={() => setIsAskModalOpen(true)}
+                selectedLang={selectedLang}
+                onOpenAskModal={() => handleOpenAskModal()}
                 onOpenMisconceptions={() => setIsMisconceptionsOpen(true)}
                 onOpenConceptMap={() => setIsConceptMapOpen(true)}
               />
             </div>
 
-            {/* Right Column Widget Area (4 cols on XL screens) */}
+            {/* Streamlined Right Sidebar (4 cols on XL screens) */}
             <div className="xl:col-span-4">
               <RightSidebar
-                onOpenAskModal={() => setIsAskModalOpen(true)}
+                selectedLang={selectedLang}
+                onOpenAskModal={() => handleOpenAskModal()}
                 onOpenConceptMap={() => setIsConceptMapOpen(true)}
                 onOpenMisconceptions={() => setIsMisconceptionsOpen(true)}
               />
@@ -104,23 +116,30 @@ export default function App() {
       {/* Modals & Dialogs */}
       <AskEduNodeModal
         isOpen={isAskModalOpen}
-        onClose={() => setIsAskModalOpen(false)}
+        onClose={() => {
+          setIsAskModalOpen(false);
+          setAskInitialQuery('');
+        }}
         selectedLang={selectedLang}
         setSelectedLang={setSelectedLang}
+        selectedBoard={selectedBoard}
+        initialQuery={askInitialQuery}
       />
 
       <ConceptMapModal
         isOpen={isConceptMapOpen}
         onClose={() => setIsConceptMapOpen(false)}
+        selectedLang={selectedLang}
         onAskAboutConcept={handleAskAboutConcept}
       />
 
       <MisconceptionsModal
         isOpen={isMisconceptionsOpen}
         onClose={() => setIsMisconceptionsOpen(false)}
+        selectedLang={selectedLang}
         onOpenAskModal={() => {
           setIsMisconceptionsOpen(false);
-          setIsAskModalOpen(true);
+          handleOpenAskModal();
         }}
       />
 
@@ -128,9 +147,10 @@ export default function App() {
         subject={activeSubjectModal}
         isOpen={Boolean(activeSubjectModal)}
         onClose={() => setActiveSubjectModal(null)}
+        selectedLang={selectedLang}
         onAskDoubt={(chap) => {
           setActiveSubjectModal(null);
-          setIsAskModalOpen(true);
+          handleOpenAskModal(`Help me with ${chap}`);
         }}
       />
     </div>

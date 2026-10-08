@@ -37,45 +37,16 @@ Student asks → EduNode understands → retrieves the relevant curriculum → e
 It also supports regional languages, voice interaction, teacher-uploaded study material, and learner progress tracking, giving both students and teachers a more personalized learning experience.
 
 ### Key Features
- Adaptive AI Tutor
-Understands student responses and dynamically adapts explanations based on the student's demonstrated understanding.
- Curriculum-Grounded Learning
-Uses relevant curriculum and educational material to ground AI responses instead of relying solely on general-purpose model knowledge.
- Multilingual Voice Interaction
-Supports interaction across:
-- English
-- Malayalam
-- Tamil
-- Hindi
-- Kannada
-- Bengali
-Students can interact naturally using speech and receive responses in their selected language.
- Misconception Detection
-Analyzes student responses to identify conceptual misunderstandings rather than simply marking answers as right or wrong.
- Adaptive Teaching
-When a misconception is detected, EduNode changes its explanation strategy to address the specific conceptual gap.
- Teacher Insights
-Aggregates student learning information to highlight common misconceptions and areas where students may need additional support.
+
+- [Adaptive AI Tutor — Understands each student’s responses and dynamically adjusts explanations and difficulty.]
+- []
+- [Feature 3]
+- [Feature 4]
 
 ## Innovation and Differentiation
-EduNode is not designed as a conventional question-answer chatbot.
-Its core idea is to model where a student's understanding breaks down and use that information to adapt subsequent teaching.
-The system combines four layers:
-Multilingual Interaction
-        +
-Curriculum Grounding
-        +
-Misconception Detection
-        +
-Adaptive Teaching
-Unlike generic AI tutors that primarily generate answers, EduNode attempts to understand:
-- What the student is asking
-- Which curriculum the student is following
-- What the student currently understands
-- Where their reasoning goes wrong
-- How the explanation should change
-- What learning gaps are appearing across students
-The system is also designed around Indian regional-language interaction, making the learning experience less dependent on English-only communication.
+
+[Explain what is innovative about the approach and how it differs from existing or conventional solutions.]
+
 ## Technical Implementation
 
 ### Architecture
@@ -87,10 +58,10 @@ The system is also designed around Indian regional-language interaction, making 
 
 | Category        | Technologies                |
 | --------------- | --------------------------- |
-| Frontend        | [Technologies / N/A]        |
+| Frontend        | React 18, Vite, Tailwind CSS, Lucide Icons |
 | Backend         | [Technologies / N/A]        |
 | Database        | [Technologies / N/A]        |
-| AI / ML         | [Models / frameworks / N/A] |
+| AI / ML         | Gemma 2B, RAG               |
 | Infrastructure  | [Technologies / N/A]        |
 | APIs / Services | [Services / N/A]            |
 
@@ -111,66 +82,54 @@ If a category or technology is not implemented in the project, specify `N/A` ins
 
 ### Team Contributions
 
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
+- **Pavitra:** Designed & developed the Student Dashboard UI using React, Vite, and Tailwind CSS; implemented Curriculum Board/Language switchers, Subject Mastery cards, Misconception Radar, and interactive AI Tutor modal.
+- **Niharika:** Voice & Language integration.
+- **Daphna:** Curriculum Grounding & RAG pipeline.
+- **Harini:** Gemma AI Model & Misconception Detection logic.
 
 ## Working Application
 
-**Live Application:** [Live URL]
-
-[Briefly explain how the deployed application can be accessed and what functionality can be tested.]
-
-The submitted application should be functional and accessible through the provided link where applicable.
-
-## Demo Video
-
-**Demo Video:** [Video URL]
-
-[Provide a short demonstration of the working project, covering the main user flow and important functionality.]
+**Live Application:** http://localhost:5173
 
 ## Open Source and AI Usage
 
 ### AI / Models
 
-- **[Model]:** [How it is used]
+- **Gemma 2B:** Light-weight instruction tuned model used for adaptive student explanations and misconception detection.
 
 ### Open Source Components
 
-- **[Library / Framework]:** [Purpose]
-- **[Dataset]:** [Purpose]
-- **[API / Service]:** [Purpose]
-
-[Include relevant licenses, attribution, and acknowledgements for external components.]
+- **React 18:** Modern declarative UI library.
+- **Vite:** High performance frontend build tool and dev server.
+- **Tailwind CSS:** Utility-first styling framework.
+- **Lucide React:** Icons for educational categories and dashboard navigation.
 
 ## Setup and Usage
 
 ### Prerequisites
 
-- [Requirement]
-- [Requirement]
+- Node.js (v18 or higher)
+- npm or yarn
 
 ### Installation
 
 ```bash
-git clone [repository-url]
-cd [project-directory]
-[installation-command]
+git clone https://github.com/repakaniharika/EduNode.git
+cd EduNode
+npm install
 ```
 
 ### Environment Variables
 
 ```env
-[VARIABLE_NAME]=[value]
+VITE_APP_TITLE=EduNode
+VITE_API_BASE_URL=http://localhost:8000
 ```
-
-
 
 ### Running the Project
 
 ```bash
-[run-command]
+npm run dev
 ```
 
 ### Usage

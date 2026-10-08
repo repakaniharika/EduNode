@@ -15,25 +15,35 @@ METADATA_PATH = VECTOR_STORE_DIR / "metadata.json"
 class VectorStore:
     def __init__(self):
         self.index = None
-        # metadata mapping: dict where key is stringified faiss integer ID, value is chunk dict
         self.metadata: Dict[str, Dict[str, Any]] = {}
         self.dimension = get_embedding_dimension()
         self.load_index()
 
     def _init_index(self):
-        # We use IndexFlatIP because our embeddings are normalized, 
-        # so Inner Product == Cosine Similarity
         self.index = faiss.IndexFlatIP(self.dimension)
         self.metadata = {}
 
     def load_index(self):
-        """Loads FAISS index and metadata from disk, or initializes them if not found."""
         if os.path.exists(INDEX_PATH) and os.path.exists(METADATA_PATH):
             try:
                 self.index = faiss.read_index(str(INDEX_PATH))
                 with open(METADATA_PATH, "r", encoding="utf-8") as f:
                     self.metadata = json.load(f)
-                logger.info(f"Loaded vector index with {self.index.ntotal} vectors.")
+                
+                # Check for legacy metadata (migration/rebuild behavior)
+                needs_rebuild = False
+                for vector_id, meta in self.metadata.items():
+                    if "board" not in meta or "grade" not in meta:
+                        needs_rebuild = True
+                        logger.warning(f"Legacy metadata detected for chunk {meta.get('chunk_id')}. Missing strict board/grade constraints.")
+                        break
+                
+                if needs_rebuild:
+                    logger.error("Incompatible legacy metadata detected in Vector Store. Nuking and rebuilding index to enforce strict curriculum schemas.")
+                    self._init_index()
+                    self.save_index()
+                else:
+                    logger.info(f"Loaded vector index with {self.index.ntotal} vectors.")
             except Exception as e:
                 logger.error(f"Failed to load vector index: {e}")
                 self._init_index()
@@ -42,7 +52,6 @@ class VectorStore:
             self._init_index()
 
     def save_index(self):
-        """Persists the FAISS index and metadata to disk."""
         try:
             faiss.write_index(self.index, str(INDEX_PATH))
             with open(METADATA_PATH, "w", encoding="utf-8") as f:
@@ -52,14 +61,12 @@ class VectorStore:
             logger.error(f"Failed to save vector index: {e}")
 
     def document_exists(self, document_id: str) -> bool:
-        """Checks if a document_id is already in the metadata."""
         for meta in self.metadata.values():
             if meta.get("document_id") == document_id:
                 return True
         return False
 
     def add_documents(self, embeddings: np.ndarray, chunks_metadata: List[Dict[str, Any]]):
-        """Adds normalized embeddings and their metadata to the index."""
         if len(embeddings) != len(chunks_metadata):
             raise ValueError("Number of embeddings and metadata items must match.")
         
@@ -77,10 +84,6 @@ class VectorStore:
         self.save_index()
 
     def search(self, query_embedding: np.ndarray, top_k: int = 5) -> List[Tuple[Dict[str, Any], float]]:
-        """
-        Searches the index for the most similar vectors.
-        Returns a list of (metadata, score) tuples.
-        """
         if self.index.ntotal == 0:
             return []
 
@@ -90,7 +93,7 @@ class VectorStore:
         results = []
         for i in range(len(indices[0])):
             idx = indices[0][i]
-            if idx != -1:  # FAISS returns -1 if not enough results
+            if idx != -1:
                 vector_id = str(idx)
                 if vector_id in self.metadata:
                     score = float(scores[0][i])
@@ -98,5 +101,4 @@ class VectorStore:
                     
         return results
 
-# Singleton instance
 vector_store = VectorStore()

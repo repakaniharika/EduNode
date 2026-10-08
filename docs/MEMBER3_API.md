@@ -14,17 +14,20 @@ This document outlines the API contracts for the Member 3 RAG and Concept Graph 
 
 ### Request Parameters (Form Data)
 - `file`: (File) The PDF document.
-- `grade`: (String, Optional) Grade level (e.g., "8").
-- `subject`: (String, Optional) Subject name (e.g., "Mathematics").
-- `curriculum`: (String, Optional) Curriculum/Board name (e.g., "NCERT").
+- `board`: (String, Required) Allowed values: `cbse`, `tamil_nadu`, `kerala`, `andhra_pradesh`, `telangana`.
+- `grade`: (Integer, Required) Allowed values: 6-12.
+- `subject`: (String, Required) Subject name (e.g., "Mathematics").
+- `medium`: (String, Optional) Language medium (e.g., "english", "malayalam").
+- `textbook`: (String, Optional) Textbook name.
+- `academic_year`: (String, Optional) E.g., "2026-27".
 
 ### Response
 ```json
 {
   "success": true,
-  "document_id": "synthetic_math_4a8d1f",
-  "document_name": "synthetic_math.pdf",
-  "chunks_created": 3,
+  "document_id": "math_class8_a8f9d0",
+  "document_name": "math_class8.pdf",
+  "chunks_created": 35,
   "status": "indexed",
   "error": null
 }
@@ -37,15 +40,16 @@ This document outlines the API contracts for the Member 3 RAG and Concept Graph 
 **Endpoint:** `POST /retrieve`
 **Content-Type:** `application/json`
 
-Provides context-grounded curriculum material to be passed to the Gemma AI engine.
+Provides strictly-filtered context-grounded curriculum material to be passed to the Gemma AI engine.
 
 ### Request Body
 ```json
 {
   "query": "How do I solve 2x + 5 = 15?",
-  "grade": "8",
-  "subject": "Mathematics",
-  "curriculum": "NCERT",
+  "board": "kerala",
+  "grade": 8,
+  "subject": "mathematics",
+  "medium": "english",
   "top_k": 5
 }
 ```
@@ -54,24 +58,44 @@ Provides context-grounded curriculum material to be passed to the Gemma AI engin
 ```json
 {
   "query": "How do I solve 2x + 5 = 15?",
+  "curriculum_metadata": {
+    "board": "kerala",
+    "grade": 8,
+    "subject": "mathematics",
+    "medium": "english"
+  },
   "results": [
     {
-      "text": "A linear equation is an equation of the first order...",
-      "score": 0.89,
-      "document": "synthetic_math.pdf",
-      "chapter": "CHAPTER 1: LINEAR EQUATIONS",
-      "section": null,
-      "page": 1,
+      "text": "...",
+      "score": 0.93,
+      "document_id": "...",
+      "document_name": "kerala_math8.pdf",
+      "board": "kerala",
+      "grade": 8,
+      "subject": "mathematics",
+      "chapter": "Solving Equations",
+      "page_start": 42,
+      "page_end": 43,
       "concept_ids": ["linear_equations"]
     }
   ],
-  "context": "SOURCE 1\nDocument: synthetic_math.pdf\nChapter: CHAPTER 1: LINEAR EQUATIONS\nPage: 1\n\nRelevant curriculum:\nA linear equation is an equation of the first order...",
   "concepts": [
     {
       "concept_id": "linear_equations",
+      "name": "Linear Equations",
       "score": 0.93
     }
-  ]
+  ],
+  "concept_context": [
+    {
+      "concept_id": "linear_equations",
+      "name": "Linear Equations",
+      "prerequisites": ["algebra"],
+      "dependents": ["quadratic_equations"],
+      "related": []
+    }
+  ],
+  "context": "SOURCE 1\nDocument: kerala_math8.pdf\nBoard: kerala | Grade: 8 | Subject: mathematics\nChapter: Solving Equations\nPage: 42\nRelevant curriculum:\n..."
 }
 ```
 
@@ -79,63 +103,13 @@ Provides context-grounded curriculum material to be passed to the Gemma AI engin
 
 ## 3. Concept Graph Endpoints (For Member 4)
 
-Provides curriculum structure.
+Provides Master Curriculum structure mappings.
 
 ### 3.1 Get Concept Details
 **Endpoint:** `GET /concepts/{concept_id}`
 
-**Response:**
-```json
-{
-  "concept_id": "linear_equations",
-  "name": "Linear Equations",
-  "prerequisites": [
-    "algebra",
-    "algebraic_fractions"
-  ],
-  "dependents": [
-    "quadratic_equations"
-  ],
-  "related": []
-}
-```
-
 ### 3.2 Get Prerequisites
 **Endpoint:** `GET /concepts/{concept_id}/prerequisites`
 
-**Response:**
-```json
-[
-  "algebra",
-  "algebraic_fractions"
-]
-```
-
 ### 3.3 Get Dependents
 **Endpoint:** `GET /concepts/{concept_id}/dependents`
-
-**Response:**
-```json
-[
-  "quadratic_equations"
-]
-```
-
-### 3.4 Map Query to Concepts
-**Endpoint:** `POST /concepts/map?query=How to solve a linear equation?`
-
-Uses semantic similarity against concept descriptions to identify the concepts involved in a student's question.
-
-**Response:**
-```json
-[
-  {
-    "concept_id": "linear_equations",
-    "score": 0.91
-  },
-  {
-    "concept_id": "algebra",
-    "score": 0.76
-  }
-]
-```

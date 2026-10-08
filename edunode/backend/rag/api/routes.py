@@ -1,83 +1,98 @@
 import os
 import shutil
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+import logging
+from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from typing import Optional, Literal
 from edunode.backend.rag.schemas import (
-    RetrievalRequest,
-    RetrievalResponse,
-    UploadResponse,
-    ConceptDetails,
-    ConceptMatch
+    RetrievalRequest, 
+    RetrievalResponse, 
+    UploadResponse, 
+    SupportedBoard, 
+    SupportedGrade
 )
 from edunode.backend.rag.ingest import ingest_document
 from edunode.backend.rag.retriever import retrieve
 from edunode.backend.rag.concept_graph import concept_graph
-from edunode.backend.rag.config import SOURCES_DIR
-from typing import List
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
-
-@router.get("/health")
-def health_check():
-    return {"status": "healthy", "module": "member3_rag"}
 
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
-    grade: str = Form(None),
-    subject: str = Form(None),
-    curriculum: str = Form(None)
+    board: SupportedBoard = Form(...),
+    grade: SupportedGrade = Form(...),
+    subject: str = Form(...),
+    medium: Optional[str] = Form(None),
+    textbook: Optional[str] = Form(None),
+    academic_year: Optional[str] = Form(None)
 ):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are currently supported.")
+    """
+    Uploads a curriculum PDF, extracts text, chunks it, embeds it,
+    maps concepts, and stores it in FAISS with strict curriculum metadata.
+    """
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
         
-    file_path = SOURCES_DIR / file.filename
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    temp_path = f"temp_{file.filename}"
+    try:
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        logger.info(f"Received document: {file.filename} for {board} Grade {grade} {subject}")
+        response = ingest_document(
+            file_path=temp_path,
+            document_name=file.filename,
+            board=board,
+            grade=grade,
+            subject=subject,
+            medium=medium,
+            textbook=textbook,
+            academic_year=academic_year
+        )
         
-    response = ingest_document(
-        file_path=str(file_path),
-        document_name=file.filename,
-        subject=subject,
-        grade=grade,
-        curriculum=curriculum
-    )
-    
-    if not response.success:
-        raise HTTPException(status_code=500, detail=response.error)
-        
-    return response
+        if not response.success:
+            raise HTTPException(status_code=500, detail=response.error)
+            
+        return response
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @router.post("/retrieve", response_model=RetrievalResponse)
 async def retrieve_context(request: RetrievalRequest):
-    if not request.query.strip():
-        raise HTTPException(status_code=400, detail="Query cannot be empty.")
-    
-    return retrieve(request)
+    """
+    Retrieves strictly filtered curriculum context based on the student's board, grade, and subject.
+    """
+    try:
+        response = retrieve(request)
+        return response
+    except Exception as e:
+        logger.error(f"Retrieval error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve curriculum context.")
 
-@router.get("/concepts/{concept_id}", response_model=ConceptDetails)
+@router.get("/concepts/{concept_id}")
 async def get_concept(concept_id: str):
+    """Retrieves full details for a given concept."""
     details = concept_graph.get_concept_details(concept_id)
     if not details:
-        raise HTTPException(status_code=404, detail=f"Concept {concept_id} not found.")
+        raise HTTPException(status_code=404, detail="Concept not found.")
     return details
 
-@router.get("/concepts/{concept_id}/prerequisites", response_model=List[str])
+@router.get("/concepts/{concept_id}/prerequisites")
 async def get_concept_prerequisites(concept_id: str):
     details = concept_graph.get_concept_details(concept_id)
     if not details:
-        raise HTTPException(status_code=404, detail=f"Concept {concept_id} not found.")
-    return details.prerequisites
+        raise HTTPException(status_code=404, detail="Concept not found.")
+    return {"concept_id": concept_id, "prerequisites": details.prerequisites}
 
-@router.get("/concepts/{concept_id}/dependents", response_model=List[str])
+@router.get("/concepts/{concept_id}/dependents")
 async def get_concept_dependents(concept_id: str):
     details = concept_graph.get_concept_details(concept_id)
     if not details:
-        raise HTTPException(status_code=404, detail=f"Concept {concept_id} not found.")
-    return details.dependents
-    
-@router.post("/concepts/map", response_model=List[ConceptMatch])
-async def map_query_to_concepts(query: str):
-    if not query.strip():
-        raise HTTPException(status_code=400, detail="Query cannot be empty.")
-    return concept_graph.map_query_to_concepts(query)
+        raise HTTPException(status_code=404, detail="Concept not found.")
+    return {"concept_id": concept_id, "dependents": details.dependents}
+
+@router.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "EduNode Member 3 - Curriculum RAG"}

@@ -22,3 +22,7 @@ DEFAULT_TOP_K = int(os.getenv("DEFAULT_TOP_K", "5"))
 # Chunking configuration
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
+
+# Concept Mapping configuration
+CONCEPT_SIMILARITY_THRESHOLD = float(os.getenv("CONCEPT_SIMILARITY_THRESHOLD", "0.6"))
+MAX_CONCEPTS_PER_CHUNK = int(os.getenv("MAX_CONCEPTS_PER_CHUNK", "3"))

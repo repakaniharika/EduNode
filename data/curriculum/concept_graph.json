@@ -1,0 +1,44 @@
+{
+  "concepts": [
+    {
+      "concept_id": "algebra",
+      "name": "Algebra",
+      "description": "The branch of mathematics dealing with variables and the rules for manipulating them.",
+      "curriculum_mappings": [
+        {"board": "cbse", "grade": 8, "subject": "mathematics", "chapter": "Algebraic Expressions"}
+      ]
+    },
+    {
+      "concept_id": "linear_equations",
+      "name": "Linear Equations",
+      "description": "Solving equations of the first order involving one or more variables, such as 2x + 5 = 15.",
+      "curriculum_mappings": [
+        {"board": "cbse", "grade": 8, "subject": "mathematics", "chapter": "Linear Equations in One Variable"},
+        {"board": "kerala", "grade": 8, "subject": "mathematics", "chapter": "Solving Equations"},
+        {"board": "tamil_nadu", "grade": 8, "subject": "mathematics", "chapter": "Algebra - Linear Equations"},
+        {"board": "andhra_pradesh", "grade": 8, "subject": "mathematics", "chapter": "Linear Equations"},
+        {"board": "telangana", "grade": 8, "subject": "mathematics", "chapter": "Equations in One Variable"}
+      ]
+    },
+    {
+      "concept_id": "quadratic_equations",
+      "name": "Quadratic Equations",
+      "description": "Equations of the second degree, usually taking the form ax^2 + bx + c = 0.",
+      "curriculum_mappings": [
+        {"board": "cbse", "grade": 10, "subject": "mathematics", "chapter": "Quadratic Equations"}
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "source": "algebra",
+      "target": "linear_equations",
+      "relation": "prerequisite_for"
+    },
+    {
+      "source": "linear_equations",
+      "target": "quadratic_equations",
+      "relation": "prerequisite_for"
+    }
+  ]
+}
